@@ -1,0 +1,382 @@
+// ============================================================
+// INTERFACE STATE
+// ============================================================
+
+interface State {
+    void update();
+}
+
+
+// ============================================================
+// JUCA
+// ============================================================
+
+class Juca {
+
+    private State state;
+
+    private int hunger;
+    private int fatigue;
+
+    public Juca() {
+
+        hunger = 0;
+        fatigue = 0;
+
+        state = new JucaWorkingState(this);
+    }
+
+    public void update() {
+        state.update();
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public int getHunger() {
+        return hunger;
+    }
+
+    public void setHunger(int hunger) {
+        this.hunger = Math.max(hunger, 0);
+    }
+
+    public int getFatigue() {
+        return fatigue;
+    }
+
+    public void setFatigue(int fatigue) {
+        this.fatigue = Math.max(fatigue, 0);
+    }
+}
+
+
+// ============================================================
+// ESTADO: JUCA TRABALHANDO
+// ============================================================
+
+class JucaWorkingState implements State {
+
+    private Juca juca;
+
+    public JucaWorkingState(Juca juca) {
+        this.juca = juca;
+    }
+
+    @Override
+    public void update() {
+
+        juca.setHunger(juca.getHunger() + 2);
+        juca.setFatigue(juca.getFatigue() + 5);
+
+        System.out.println("[JUCA]");
+        System.out.println("Trabalhando...");
+        System.out.println("Fome: " + juca.getHunger());
+        System.out.println("Cansaço: " + juca.getFatigue());
+
+        // Prioridade: sono antes de fome
+        if (juca.getFatigue() > 50) {
+
+            System.out.println("Bateu um sono...");
+
+            juca.setState(
+                new JucaSleepingState(juca)
+            );
+
+        } else if (juca.getHunger() > 10) {
+
+            System.out.println("Bateu uma fome...");
+
+            juca.setState(
+                new JucaEatingState(juca)
+            );
+        }
+    }
+}
+
+
+// ============================================================
+// ESTADO: JUCA COMENDO
+// ============================================================
+
+class JucaEatingState implements State {
+
+    private Juca juca;
+
+    public JucaEatingState(Juca juca) {
+        this.juca = juca;
+    }
+
+    @Override
+    public void update() {
+
+        juca.setHunger(juca.getHunger() - 5);
+
+        System.out.println("[JUCA]");
+        System.out.println("Comendo...");
+        System.out.println("Fome: " + juca.getHunger());
+        System.out.println("Cansaço: " + juca.getFatigue());
+
+        if (juca.getHunger() <= 0) {
+
+            juca.setHunger(0);
+
+            System.out.println("Ufa! Já estou cheio...");
+
+            juca.setState(
+                new JucaWorkingState(juca)
+            );
+
+            System.out.println(
+                "Hora de ir para o trabalho!"
+            );
+        }
+    }
+}
+
+
+// ============================================================
+// ESTADO: JUCA DORMINDO
+// ============================================================
+
+class JucaSleepingState implements State {
+
+    private Juca juca;
+
+    public JucaSleepingState(Juca juca) {
+        this.juca = juca;
+    }
+
+    @Override
+    public void update() {
+
+        juca.setHunger(juca.getHunger() + 1);
+        juca.setFatigue(juca.getFatigue() - 10);
+
+        System.out.println("[JUCA]");
+        System.out.println("Dormindo...");
+        System.out.println("Fome: " + juca.getHunger());
+        System.out.println("Cansaço: " + juca.getFatigue());
+
+        if (juca.getFatigue() <= 0) {
+
+            juca.setFatigue(0);
+
+            if (juca.getHunger() <= 10) {
+
+                juca.setState(
+                    new JucaWorkingState(juca)
+                );
+
+                System.out.println(
+                    "Hora de ir para o trabalho!"
+                );
+
+            } else {
+
+                juca.setState(
+                    new JucaEatingState(juca)
+                );
+
+                System.out.println(
+                    "Bateu uma fome..."
+                );
+            }
+        }
+    }
+}
+
+
+// ============================================================
+// BOB
+// ============================================================
+
+class Bob {
+
+    private State state;
+
+    private int cookingProgress;
+    private int mess;
+
+    public Bob() {
+
+        cookingProgress = 0;
+        mess = 0;
+
+        state = new BobCookingState(this);
+    }
+
+    public void update() {
+        state.update();
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public int getCookingProgress() {
+        return cookingProgress;
+    }
+
+    public void setCookingProgress(int cookingProgress) {
+        this.cookingProgress = cookingProgress;
+    }
+
+    public int getMess() {
+        return mess;
+    }
+
+    public void setMess(int mess) {
+        this.mess = Math.max(mess, 0);
+    }
+}
+
+
+// ============================================================
+// ESTADO: BOB COZINHANDO
+// ============================================================
+
+class BobCookingState implements State {
+
+    private Bob bob;
+
+    public BobCookingState(Bob bob) {
+        this.bob = bob;
+    }
+
+    @Override
+    public void update() {
+
+        bob.setCookingProgress(
+            bob.getCookingProgress() + 3
+        );
+
+        bob.setMess(
+            bob.getMess() + 2
+        );
+
+        System.out.println("[BOB]");
+        System.out.println("Cozinhando...");
+
+        System.out.println(
+            "Progresso da comida: "
+            + bob.getCookingProgress()
+        );
+
+        System.out.println(
+            "Bagunça: "
+            + bob.getMess()
+        );
+
+        if (bob.getCookingProgress() >= 12) {
+
+            bob.setCookingProgress(12);
+
+            System.out.println(
+                "A comida está pronta!"
+            );
+
+            bob.setState(
+                new BobCleaningState(bob)
+            );
+
+            System.out.println(
+                "Agora preciso limpar esta bagunça..."
+            );
+        }
+    }
+}
+
+
+// ============================================================
+// ESTADO: BOB LIMPANDO
+// ============================================================
+
+class BobCleaningState implements State {
+
+    private Bob bob;
+
+    public BobCleaningState(Bob bob) {
+        this.bob = bob;
+    }
+
+    @Override
+    public void update() {
+
+        bob.setMess(
+            bob.getMess() - 4
+        );
+
+        System.out.println("[BOB]");
+        System.out.println("Limpando...");
+
+        System.out.println(
+            "Progresso da comida: "
+            + bob.getCookingProgress()
+        );
+
+        System.out.println(
+            "Bagunça: "
+            + bob.getMess()
+        );
+
+        if (bob.getMess() <= 0) {
+
+            bob.setMess(0);
+
+            System.out.println(
+                "Tudo limpo!"
+            );
+
+            bob.setCookingProgress(0);
+
+            bob.setState(
+                new BobCookingState(bob)
+            );
+
+            System.out.println(
+                "Hora de preparar uma refeição!"
+            );
+        }
+    }
+}
+
+
+// ============================================================
+// MAIN
+// ============================================================
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Juca juca = new Juca();
+
+        Bob bob = new Bob();
+
+        // Simulação de 30 ticks
+        for (int tick = 1; tick <= 30; tick++) {
+
+            System.out.println(
+                "\n=============================="
+            );
+
+            System.out.println(
+                "TICK " + tick
+            );
+
+            System.out.println(
+                "=============================="
+            );
+
+            // Juca
+            juca.update();
+
+            System.out.println();
+
+            // Bob
+            bob.update();
+        }
+    }
+}
